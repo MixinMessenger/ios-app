@@ -53,26 +53,25 @@ class BaseDatabase {
         })
     }
 
-    func getStringValues(column: ColumnResultConvertible, tableName: String, isDistinct: Bool = false, condition: Condition? = nil, orderBy orderList: [OrderBy]? = nil, limit: Limit? = nil, inTransaction: Bool = true) -> [String] {
+    func getStringValues(column: ColumnResultConvertible, tableName: String, condition: Condition? = nil, orderBy orderList: [OrderBy]? = nil, limit: Limit? = nil, inTransaction: Bool = true) -> [String] {
         if inTransaction {
             var result = [String]()
             try! database.runTransaction {
-                result = self.getStringValues(column: column, tableName: tableName, isDistinct: isDistinct, condition: condition, orderBy: orderList, limit: limit, inTransaction: false)
+                result = self.getStringValues(column: column, tableName: tableName, condition: condition, orderBy: orderList, limit: limit, inTransaction: false)
             }
             return result
         } else {
-            let values: FundamentalColumn
-            if isDistinct {
-                values = try! database.tryGetDistinctColumn(on: column, fromTable: tableName, where: condition, orderBy: orderList, limit: limit)
-            } else {
-                values = try! database.tryGetColumn(on: column, fromTable: tableName, where: condition, orderBy: orderList, limit: limit)
-            }
+            let values = try! database.tryGetColumn(on: column, fromTable: tableName, where: condition, orderBy: orderList, limit: limit)
             var result = [String]()
             for value in values {
                 result.append(value.stringValue)
             }
             return result
         }
+    }
+
+    func getStringValues(sql: String, values: [ColumnEncodable] = []) -> [String] {
+        return try! database.prepareSelectSQL(sql: sql, values: values).getStringValues()
     }
 
     func getInt32Values(column: ColumnResultConvertible, tableName: String, isDistinct: Bool = false, condition: Condition? = nil, orderBy orderList: [OrderBy]? = nil, limit: Limit? = nil, inTransaction: Bool = true) -> [Int32] {

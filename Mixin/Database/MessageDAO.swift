@@ -6,22 +6,10 @@ final class MessageDAO {
 
     static let shared = MessageDAO()
 
-    static let sqlTriggerLastMessageInsert = """
-    CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages
-    BEGIN
-        UPDATE conversations SET last_message_id = new.id, last_message_created_at = new.created_at WHERE conversation_id = new.conversation_id;
-    END
-    """
     static let sqlTriggerLastMessageDelete = """
     CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages
     BEGIN
         UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id;
-    END
-    """
-    static let sqlTriggerUnseenMessageInsert = """
-    CREATE TRIGGER IF NOT EXISTS conversation_unseen_message_count_insert AFTER INSERT ON messages
-    BEGIN
-        UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id;
     END
     """
     static let sqlQueryLastUnreadMessageTime = """
@@ -95,6 +83,20 @@ final class MessageDAO {
         WHERE a.album_id = messages.album_id AND s.name = messages.name
     ) WHERE category LIKE '%_STICKER' AND ifnull(sticker_id, '') = ''
     """
+    static let sqlQueryNeedSyncUsers = """
+    SELECT DISTINCT user_id FROM (
+        SELECT m.user_id, u.identity_number FROM messages m
+        LEFT JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = ? AND m.created_at >= ?)
+    WHERE identity_number IS NULL
+    """
+    static let sqlQueryNeedSyncShareUsers = """
+    SELECT DISTINCT user_id FROM (
+        SELECT m.shared_user_id as user_id, u.identity_number FROM messages m
+        LEFT JOIN users u ON m.shared_user_id = u.user_id
+        WHERE m.conversation_id = ? AND m.created_at >= ? AND m.shared_user_id IS NOT NULL)
+    WHERE identity_number IS NULL
+    """
     
     func getMediaUrls(likeCategory category: String) -> [String] {
         return MixinDatabase.shared.getStringValues(column: Message.Properties.mediaUrl.asColumnResult(),
@@ -155,7 +157,7 @@ final class MessageDAO {
         if updateUnseen {
             MixinDatabase.shared.transaction { (database) in
                 try database.update(table: Message.tableName, on: [Message.Properties.status], with: [status], where: Message.Properties.messageId == messageId)
-                try updateUnseenMessageCount(database: database, conversationId: conversationId)
+                try ConversationDAO.shared.updateUnseenMessageCount(database: database, conversationId: conversationId)
             }
         } else {
             MixinDatabase.shared.update(maps: [(Message.Properties.status, status)], tableName: Message.tableName, condition: Message.Properties.messageId == messageId)
@@ -163,10 +165,6 @@ final class MessageDAO {
         let change = ConversationChange(conversationId: conversationId, action: .updateMessageStatus(messageId: messageId, newStatus: MessageStatus(rawValue: status) ?? .UNKNOWN))
         NotificationCenter.default.afterPostOnMain(name: .ConversationDidChange, object: change)
         return true
-    }
-
-    func updateUnseenMessageCount(database: Database, conversationId: String) throws {
-        try database.prepareUpdateSQL(sql: "UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = ?) where conversation_id = ?").execute(with: [conversationId, conversationId])
     }
 
     func updateMediaMessage(messageId: String, mediaUrl: String, status: MediaStatus, conversationId: String) {
@@ -407,6 +405,8 @@ final class MessageDAO {
         } else {
             try database.insertOrReplace(objects: message, intoTable: Message.tableName)
         }
+        try ConversationDAO.shared.updateUnseenMessageCount(database: database, conversationId: message.conversationId)
+        try ConversationDAO.shared.updateLastMessage(database: database, lastMessage: message)
         
         guard let newMessage: MessageItem = try database.prepareSelectSQL(on: MessageItem.Properties.all, sql: MessageDAO.sqlQueryFullMessageById, values: [message.messageId]).allObjects().first else {
             return
@@ -466,7 +466,7 @@ final class MessageDAO {
         try database.update(maps: values, tableName: Message.tableName, condition: Message.Properties.messageId == messageId)
 
         if status == MessageStatus.FAILED.rawValue {
-            try MessageDAO.shared.updateUnseenMessageCount(database: database, conversationId: conversationId)
+            try ConversationDAO.shared.updateUnseenMessageCount(database: database, conversationId: conversationId)
         }
 
         if quoteMessageIds.count > 0, let quoteMessage: MessageItem = try database.prepareSelectSQL(on: MessageItem.Properties.all, sql: MessageDAO.sqlQueryQuoteMessageById, values: [messageId]).allObjects().first, let data = try? JSONEncoder().encode(quoteMessage) {
@@ -521,7 +521,7 @@ extension MessageDAO {
                 return
             }
 
-            try MessageDAO.shared.updateUnseenMessageCount(database: database, conversationId: conversationId)
+            try ConversationDAO.shared.updateUnseenMessageCount(database: database, conversationId: conversationId)
 
             guard let newMessage: MessageItem = try database.prepareSelectSQL(on: MessageItem.Properties.all, sql: MessageDAO.sqlQueryFullMessageById, values: [messageId]).allObjects().first else {
                 return

@@ -72,7 +72,6 @@ class HomeViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(dataDidChange(_:)), name: .ConversationDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(dataDidChange(_:)), name: .UserDidChange, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(socketStatusChange), name: .SocketStatusChanged, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(syncStatusChange), name: .SyncMessageDidAppear, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive(_:)), name: UIApplication.didBecomeActiveNotification, object: nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             UNUserNotificationCenter.current().checkNotificationSettings { (authorizationStatus: UNAuthorizationStatus) in
@@ -192,22 +191,6 @@ class HomeViewController: UIViewController {
         } else {
             connectingView.startAnimating()
             titleLabel.text = R.string.localizable.dialog_progress_connect()
-        }
-    }
-    
-    @objc func syncStatusChange(_ notification: Notification) {
-        guard WebSocketService.shared.connected, view?.isVisibleInScreen ?? false else {
-            return
-        }
-        guard let progress = notification.object as? Int else {
-            return
-        }
-        if progress >= 100 {
-            titleLabel.text = "Mixin"
-            connectingView.stopAnimating()
-        } else {
-            titleLabel.text = Localized.CONNECTION_HINT_PROGRESS(progress)
-            connectingView.startAnimating()
         }
     }
     

@@ -13,8 +13,6 @@ extension NSNotification.Name {
 
     static let UserDidChange = NSNotification.Name("one.mixin.ios.user.changed")
 
-    static let SyncMessageDidAppear = NSNotification.Name("one.mixin.ios.sync.message")
-
     static let ParticipantDidChange = NSNotification.Name("one.mixin.ios.participant.changed")
 
     static let AssetsDidChange = NSNotification.Name("one.mixin.ios.assets.changed")

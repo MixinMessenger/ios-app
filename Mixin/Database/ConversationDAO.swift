@@ -50,6 +50,26 @@ final class ConversationDAO {
         WHERE muteUntil < ?
     )
     """
+    private static let sqlUpdateUnseenMessageCount = """
+    UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = ?) WHERE conversation_id = ?
+    """
+    private static let sqlUpdateLastMessage = """
+    UPDATE conversations SET last_message_id = ?, last_message_created_at = ? WHERE conversation_id = ?
+    """
+    private static let sqlQueryBotConversation = """
+    SELECT DISTINCT c.conversation_id FROM conversations c
+    INNER JOIN users u ON u.user_id = c.owner_id AND u.app_id IS NOT NULL
+    INNER JOIN messages_blaze mb ON mb.conversation_id = c.conversation_id
+    WHERE c.category = 'CONTACT'
+    """
+
+    func updateUnseenMessageCount(database: Database, conversationId: String) throws {
+        try database.prepareUpdateSQL(sql: ConversationDAO.sqlUpdateUnseenMessageCount).execute(with: [conversationId, conversationId])
+    }
+
+    func updateLastMessage(database: Database, lastMessage: Message) throws {
+        try database.prepareUpdateSQL(sql: ConversationDAO.sqlUpdateLastMessage).execute(with: [lastMessage.messageId, lastMessage.createdAt, lastMessage.conversationId])
+    }
 
     func showBadgeNumber() {
         DispatchQueue.global().async {
@@ -64,6 +84,10 @@ final class ConversationDAO {
                 }
             }
         }
+    }
+
+    func getBotConversations() throws -> [String] {
+        return MixinDatabase.shared.getStringValues(sql: ConversationDAO.sqlQueryBotConversation)
     }
 
     func getCategoryStorages(conversationId: String) -> [ConversationCategoryStorage] {

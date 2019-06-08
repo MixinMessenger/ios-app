@@ -24,6 +24,14 @@ extension Array {
         return index < self.endIndex ? index : nil
     }
 
+
+}
+
+extension Array where Iterator.Element: Hashable {
+
+    func distinct() -> [Iterator.Element] {
+        return Array(Set(self))
+    }
 }
 
 extension Array where Iterator.Element: Equatable {

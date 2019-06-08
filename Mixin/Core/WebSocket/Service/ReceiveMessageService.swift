@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 import SDWebImage
 import UserNotifications
+import WCDBSwift
 
 class ReceiveMessageService: MixinService {
 
@@ -38,7 +39,7 @@ class ReceiveMessageService: MixinService {
                     MessageDAO.shared.updateMessageStatus(messageId: data.messageId, status: data.status)
                     ReceiveMessageService.shared.sendSessionStatus(messageId: data.messageId, status: data.status)
                 } else {
-                    guard BlazeMessageDAO.shared.insertOrReplace(messageId: data.messageId, data: blazeMessage.data, createdAt: data.createdAt) else {
+                    guard BlazeMessageDAO.shared.insertOrReplace(data: data, originalData: blazeMessage.data) else {
                         return
                     }
                     ReceiveMessageService.shared.processReceiveMessages()
@@ -47,7 +48,7 @@ class ReceiveMessageService: MixinService {
                 if data.userId == AccountAPI.shared.accountUserId && data.category.isEmpty && data.sessionId == AccountAPI.shared.accountSessionId {
 
                 } else {
-                    guard BlazeMessageDAO.shared.insertOrReplace(messageId: data.messageId, data: blazeMessage.data, createdAt: data.createdAt) else {
+                    guard BlazeMessageDAO.shared.insertOrReplace(data: data, originalData: blazeMessage.data)  else {
                         return
                     }
                     ReceiveMessageService.shared.processReceiveMessages()
@@ -76,15 +77,8 @@ class ReceiveMessageService: MixinService {
                 ReceiveMessageService.shared.processing = false
             }
 
-            var finishedJobCount = 0
-
             repeat {
                 let blazeMessageDatas = BlazeMessageDAO.shared.getBlazeMessageData(limit: 50)
-                let remainJobCount = BlazeMessageDAO.shared.getCount()
-                if remainJobCount + finishedJobCount > 500 {
-                    let progress = blazeMessageDatas.count == 0 ? 100 : Int(Float(finishedJobCount) / Float(remainJobCount + finishedJobCount) * 100)
-                    NotificationCenter.default.postOnMain(name: .SyncMessageDidAppear, object: progress)
-                }
                 guard blazeMessageDatas.count > 0 else {
                     return
                 }
@@ -119,7 +113,9 @@ class ReceiveMessageService: MixinService {
                     BlazeMessageDAO.shared.delete(data: data)
                 }
 
-                finishedJobCount += blazeMessageDatas.count
+                if blazeMessageDatas.count >= 50 {
+                    ReceiveMessageService.shared.processBotMessages()
+                }
             } while true
         }
     }
@@ -131,6 +127,131 @@ class ReceiveMessageService: MixinService {
             ReceiveMessageService.shared.updateRemoteMessageStatus(messageId: data.messageId, status: .READ)
         }
         BlazeMessageDAO.shared.delete(data: data)
+    }
+
+    private func processBotMessages() {
+        guard BlazeMessageDAO.shared.getCount() > 500 else {
+            return
+        }
+        guard let conversationIds = try? ConversationDAO.shared.getBotConversations(), conversationIds.count > 0 else {
+            return
+        }
+
+        let pageCount = AccountUserDefault.shared.isDesktopLoggedIn ? 1000 : 2000
+        for conversationId in conversationIds {
+            var blazeMessageDatas = [BlazeMessageData]()
+            repeat {
+                blazeMessageDatas = BlazeMessageDAO.shared.getBlazeMessageData(conversationId: conversationId, limit: pageCount)
+                let blazeMessages = blazeMessageDatas.compactMap({ (data) -> (Message, Job?)? in
+                    return ReceiveMessageService.shared.parseBlazeMessage(data: data)
+                })
+                let messages = blazeMessages.compactMap({ $0.0 })
+                if messages.count > 1, let lastCreatedAt = blazeMessageDatas.last?.createdAt {
+                    var jobs = [Job]()
+                    for i in stride(from: 0, to: messages.count, by: 100) {
+                        let by = i + 100 > messages.count ? messages.count : i + 100
+
+                        let statusMessages: [TransferMessage] = messages[i..<by].map { TransferMessage(messageId: $0.messageId, status: $0.category.hasPrefix("APP_") ? MessageStatus.READ.rawValue : MessageStatus.DELIVERED.rawValue ) }
+                        let blazeMessage = BlazeMessage(params: BlazeMessageParam(messages: statusMessages), action: BlazeMessageAction.acknowledgeMessageReceipts.rawValue)
+                        jobs.append(Job(jobId: blazeMessage.id, action: .SEND_ACK_MESSAGES, blazeMessage: blazeMessage))
+                    }
+
+                    if AccountUserDefault.shared.isDesktopLoggedIn {
+                        jobs += blazeMessages.compactMap({ $0.1 })
+                    }
+
+                    let quoteMessages = messages.filter({ !($0.quoteMessageId?.isEmpty ?? true) })
+                    let hasShareContact = messages.contains(where: { !($0.sharedUserId?.isEmpty ?? true) })
+
+                    var syncUserIds = [String]()
+                    MixinDatabase.shared.transaction { (database) in
+                        try database.insertOrReplace(objects: messages, intoTable: Message.tableName)
+                        for message in quoteMessages {
+                            guard let quoteMessageId = message.quoteMessageId else {
+                                continue
+                            }
+                            guard let quoteMessage: MessageItem = try database.prepareSelectSQL(on: MessageItem.Properties.all, sql: MessageDAO.sqlQueryQuoteMessageById, values: [quoteMessageId]).allObjects().first, let data = try? JSONEncoder().encode(quoteMessage) else {
+                                continue
+                            }
+                            try database.update(table: Message.tableName, on: [Message.Properties.quoteContent], with: [data], where: Message.Properties.messageId == message.messageId)
+                        }
+
+                        try database.insert(objects: jobs, intoTable: Job.tableName)
+                        try database.delete(fromTable: MessageBlaze.tableName, where: MessageBlaze.Properties.conversationId == conversationId && MessageBlaze.Properties.isSessionMessage == false && MessageBlaze.Properties.createdAt <= lastCreatedAt, orderBy: [MessageBlaze.Properties.createdAt.asOrder(by: .ascending)], limit: pageCount)
+                        try ConversationDAO.shared.updateUnseenMessageCount(database: database, conversationId: conversationId)
+                        try ConversationDAO.shared.updateLastMessage(database: database, lastMessage: messages.last!)
+
+                        let firstCreatedAt = blazeMessageDatas[0].createdAt
+                        syncUserIds = try database.prepareSelectSQL(sql: MessageDAO.sqlQueryNeedSyncUsers, values: [conversationId, firstCreatedAt]).getStringValues()
+                        if hasShareContact {
+                            syncUserIds += try database.prepareSelectSQL(sql: MessageDAO.sqlQueryNeedSyncShareUsers, values: [conversationId, firstCreatedAt]).getStringValues()
+                        }
+                    }
+
+                    if syncUserIds.count > 0 {
+                        ReceiveMessageService.shared.syncUsers(userIds: syncUserIds)
+                    }
+
+
+                    let change = ConversationChange(conversationId: conversationId,
+                                                    action: .reload)
+                    NotificationCenter.default.afterPostOnMain(name: .ConversationDidChange, object: change)
+                    SendMessageService.shared.processMessages()
+
+                    if blazeMessageDatas.count >= pageCount {
+                        Thread.sleep(forTimeInterval: 0.1)
+                    }
+                }
+            } while AccountAPI.shared.didLogin && blazeMessageDatas.count >= pageCount
+        }
+    }
+
+    private func parseBlazeMessage(data: BlazeMessageData) -> (Message, Job?)? {
+        let plainText = data.data
+        var message: Message
+        switch data.category {
+        case MessageCategory.PLAIN_TEXT.rawValue:
+            guard let content = plainText.base64Decoded() else {
+                return nil
+            }
+            message = Message.createMessage(textMessage: content, data: data)
+        case MessageCategory.PLAIN_IMAGE.rawValue, MessageCategory.PLAIN_VIDEO.rawValue:
+            guard let base64Data = Data(base64Encoded: plainText), let transferMediaData = (try? jsonDecoder.decode(TransferAttachmentData.self, from: base64Data)) else {
+                return nil
+            }
+            guard let height = transferMediaData.height, let width = transferMediaData.width, height > 0, width > 0, !(transferMediaData.mimeType?.isEmpty ?? true) else {
+                return nil
+            }
+            message = Message.createMessage(mediaData: transferMediaData, data: data)
+        case MessageCategory.PLAIN_DATA.rawValue:
+            guard let base64Data = Data(base64Encoded: plainText), let transferMediaData = (try? jsonDecoder.decode(TransferAttachmentData.self, from: base64Data)) else {
+                return nil
+            }
+            guard transferMediaData.size > 0 else {
+                return nil
+            }
+            message = Message.createMessage(mediaData: transferMediaData, data: data)
+        case MessageCategory.PLAIN_AUDIO.rawValue:
+            guard let base64Data = Data(base64Encoded: plainText), let transferMediaData = (try? jsonDecoder.decode(TransferAttachmentData.self, from: base64Data)) else {
+                return nil
+            }
+            message = Message.createMessage(mediaData: transferMediaData, data: data)
+        case MessageCategory.PLAIN_STICKER.rawValue:
+            guard let base64Data = Data(base64Encoded: plainText), let transferStickerData = (try? jsonDecoder.decode(TransferStickerData.self, from: base64Data)) else {
+                return nil
+            }
+            message = Message.createMessage(stickerData: transferStickerData, data: data)
+        case MessageCategory.PLAIN_CONTACT.rawValue:
+            guard let base64Data = Data(base64Encoded: plainText), let transferData = (try? jsonDecoder.decode(TransferContactData.self, from: base64Data)) else {
+                return nil
+            }
+            message = Message.createMessage(contactData: transferData, data: data)
+        case MessageCategory.APP_CARD.rawValue, MessageCategory.APP_BUTTON_GROUP.rawValue:
+            message = Message.createMessage(appMessage: data)
+        default:
+            return nil
+        }
+        return AccountUserDefault.shared.isDesktopLoggedIn ? (message, Job(message: message, isSessionMessage: true, representativeId: data.getDataUserId(), data: plainText)) : (message, nil)
     }
     
     private func processWebRTCMessage(data: BlazeMessageData) {
@@ -529,6 +650,26 @@ class ReceiveMessageService: MixinService {
         } while AccountAPI.shared.didLogin
 
         return false
+    }
+
+    private func syncUsers(userIds: [String]) {
+        guard userIds.count > 0 else {
+            return
+        }
+        let ids = userIds.distinct().filter({ $0 != User.systemUser && $0 != currentAccountId && !$0.isEmpty })
+        guard ids.count > 0 else {
+            return
+        }
+
+        repeat {
+            switch UserAPI.shared.showUsers(userIds: ids) {
+            case let .success(response):
+                UserDAO.shared.updateUsers(users: response)
+                return
+            case .failure:
+                checkNetworkAndWebSocket()
+            }
+        } while AccountAPI.shared.didLogin
     }
 
     private func processPlainMessage(data: BlazeMessageData) {
