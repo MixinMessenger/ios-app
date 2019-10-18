@@ -194,7 +194,6 @@ public class Localized {
         return String(format: LocalizedString("chat_message_admin", comment: "%@ now an admin"), fullName)
     }
     public static let CHAT_CELL_TITLE_ENCRYPTION = LocalizedString("chat_cell_title_encryption", comment: "Messages to this conversation are encrypted end-to-end, click for more information")
-    public static let CHAT_CELL_TITLE_UNKNOWN_CATEGORY = LocalizedString("chat_cell_title_unknown_category", comment: "This type of message is not supported, please upgrade Mixin to the latest version.")
     public static let CHAT_FORWARD_TITLE = LocalizedString("chat_forward_title", comment: "Forward")
     public static let CHAT_FORWARD_CHATS = LocalizedString("chat_forward_chats", comment: "CHATS")
     public static let CHAT_FORWARD_CONTACTS = LocalizedString("chat_forward_contacts", comment: "CONTACTS")

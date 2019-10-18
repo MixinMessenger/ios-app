@@ -212,7 +212,8 @@
 "chat_message_recalled" = "This message was deleted";
 "chat_message_recalled_by_me" = "You deleted this message";
 "chat_cell_title_encryption" = "Messages to this conversation are encrypted end-to-end, click for more information";
-"chat_cell_title_unknown_category" = "This type of message is not supported, please upgrade Mixin to the latest version.";
+"chat_unknown_category_hint" = "This type of message is not supported, please upgrade Mixin to the latest version.";
+"chat_unknown_category_link" = "Learn more.";
 "chat_forward_title" = "Forward";
 "chat_forward_chats" = "CHATS";
 "chat_forward_contacts" = "CONTACTS";

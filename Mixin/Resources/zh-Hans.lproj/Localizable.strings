@@ -212,7 +212,8 @@
 "chat_message_recalled" = "此消息已撤回";
 "chat_message_recalled_by_me" = "你撤回了一条消息";
 "chat_cell_title_encryption" = "此对话中的消息使用端对端加密。点击了解更多。";
-"chat_cell_title_unknown_category" = "不支持此类型消息。请升级 Mixin 查看。";
+"chat_unknown_category_hint" = "消息类型不支持，请尝试升级至最新版。";
+"chat_unknown_category_link" = "了解更多。";
 "chat_forward_title" = "转发";
 "chat_forward_chats" = "最近聊天";
 "chat_forward_contacts" = "联系人";
