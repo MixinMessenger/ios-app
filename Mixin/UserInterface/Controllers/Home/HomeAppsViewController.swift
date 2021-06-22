@@ -9,18 +9,22 @@ final class HomeAppsViewController: ResizablePopupViewController {
     @IBOutlet weak var pinnedCollectionLayout: UICollectionViewFlowLayout!
     @IBOutlet weak var candidateCollectionView: UICollectionView!
     @IBOutlet weak var candidateCollectionLayout: UICollectionViewFlowLayout!
-    
+    @IBOutlet weak var pageControl: UIPageControl!
+
     @IBOutlet weak var titleBarHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var pinnedCollectionViewLeadingConstraint: NSLayoutConstraint!
     @IBOutlet weak var pinnedCollectionViewTrailingConstraint: NSLayoutConstraint!
     @IBOutlet weak var pinnedWrapperHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var candidateCollectionViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var pageControlBottomConstraint: NSLayoutConstraint!
     
     override var resizableScrollView: UIScrollView? {
         candidateCollectionView
     }
     
     private let cellCountPerRow = 4
+    private let cellSize = CGSize(width: 80, height: 100)
+    private let cellCountPerPage = (row: 4, column: ScreenHeight.current == .medium ? 3 : 4)
     
     private lazy var resizeGestureCoordinator = HomeAppResizeGestureCoordinator(scrollView: candidateCollectionView)
     private lazy var candidateEmptyHintLabel: UILabel = {
@@ -117,13 +121,16 @@ final class HomeAppsViewController: ResizablePopupViewController {
     
     override func preferredContentHeight(forSize size: Size) -> CGFloat {
         view.layoutIfNeeded()
-        let window = AppDelegate.current.mainWindow
-        switch size {
-        case .expanded, .unavailable:
-            return window.bounds.height - window.safeAreaInsets.top
-        case .compressed:
-            return floor(window.bounds.height / 3 * 2)
-        }
+        return titleBarHeightConstraint.constant
+            + pinnedWrapperHeightConstraint.constant
+            + cellSize.height * CGFloat(cellCountPerPage.column)
+            + pageControlBottomConstraint.constant
+            + AppDelegate.current.mainWindow.safeAreaInsets.bottom
+            + 30
+    }
+    
+    @IBAction func pageControlValueChanged(_ sender: UIPageControl) {
+        
     }
     
     @IBAction func dismissAction(_ sender: Any) {
@@ -150,54 +157,6 @@ final class HomeAppsViewController: ResizablePopupViewController {
             if candidateEmptyHintLabel.superview == nil {
                 candidateCollectionView.addSubview(candidateEmptyHintLabel)
             }
-        }
-    }
-
-    override func changeSizeAction(_ recognizer: UIPanGestureRecognizer) {
-        guard size != .unavailable else {
-            return
-        }
-        switch recognizer.state {
-        case .began:
-            resizableScrollView?.isScrollEnabled = false
-            size = size.opposite
-            let animator = makeSizeAnimator(destination: size)
-            animator.pauseAnimation()
-            sizeAnimator = animator
-        case .changed:
-            if let animator = sizeAnimator {
-                let translation = recognizer.translation(in: backgroundButton)
-                var fractionComplete = translation.y / (backgroundButton.bounds.height - preferredContentHeight(forSize: .compressed))
-                if size == .expanded {
-                    fractionComplete *= -1
-                }
-                animator.fractionComplete = fractionComplete
-            }
-        case .ended:
-            if let animator = sizeAnimator {
-                let locationAboveBegan = recognizer.translation(in: backgroundButton).y <= 0
-                let isGoingUp = recognizer.velocity(in: backgroundButton).y <= 0
-                let locationUnderBegan = recognizer.translation(in: backgroundButton).y >= 0
-                let isGoingDown = recognizer.velocity(in: backgroundButton).y >= 0
-                let shouldExpand = size == .expanded
-                    && ((locationAboveBegan && isGoingUp) || isGoingUp)
-                let shouldCompress = size == .compressed
-                    && ((locationUnderBegan && isGoingDown) || isGoingDown)
-                let shouldReverse = !shouldExpand && !shouldCompress
-                let completionSize = shouldReverse ? size.opposite : size
-                animator.isReversed = shouldReverse
-                animator.addCompletion { (position) in
-                    self.size = completionSize
-                    self.updatePreferredContentSizeHeight(size: completionSize)
-                    self.setNeedsSizeAppearanceUpdated(size: completionSize)
-                    self.sizeAnimator = nil
-                    recognizer.isEnabled = true
-                }
-                recognizer.isEnabled = false
-                animator.continueAnimation(withTimingParameters: nil, durationFactor: 0)
-            }
-        default:
-            break
         }
     }
 
