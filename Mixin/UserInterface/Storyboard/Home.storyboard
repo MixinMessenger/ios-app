@@ -863,11 +863,11 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="2ej-wk-Qvq">
                                 <rect key="frame" x="0.0" y="70" width="375" height="110"/>
                                 <subviews>
-                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="kTb-Tu-KFj">
+                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" bouncesZoom="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="kTb-Tu-KFj">
                                         <rect key="frame" x="20" y="10" width="335" height="82"/>
                                         <color key="backgroundColor" name="background_secondary"/>
-                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="AbY-x2-upI">
-                                            <size key="itemSize" width="50" height="50"/>
+                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="AbY-x2-upI">
+                                            <size key="itemSize" width="60" height="60"/>
                                             <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                             <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                             <inset key="sectionInset" minX="16" minY="11" maxX="16" maxY="11"/>
@@ -930,14 +930,14 @@
                                     <constraint firstItem="kTb-Tu-KFj" firstAttribute="trailing" secondItem="6Nf-kR-8cU" secondAttribute="trailing" constant="20" id="zay-VY-Xpf"/>
                                 </constraints>
                             </view>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="LDb-PZ-N3K">
-                                <rect key="frame" x="0.0" y="180" width="375" height="488"/>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" alwaysBounceHorizontal="YES" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="LDb-PZ-N3K">
+                                <rect key="frame" x="0.0" y="180" width="375" height="400"/>
                                 <color key="backgroundColor" name="background"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="488" id="QTq-YP-lKy"/>
+                                    <constraint firstAttribute="height" constant="400" id="QTq-YP-lKy"/>
                                 </constraints>
-                                <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="5" id="TuB-8c-Jea">
-                                    <size key="itemSize" width="80" height="100"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="gFE-uW-e9b">
+                                    <size key="itemSize" width="128" height="128"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -986,7 +986,7 @@
                                 </cells>
                             </collectionView>
                             <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" hidesForSinglePage="YES" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="0Nz-k8-cp3">
-                                <rect key="frame" x="126.5" y="609" width="122" height="28"/>
+                                <rect key="frame" x="126.5" y="600" width="122" height="28"/>
                                 <color key="pageIndicatorTintColor" name="indicator_tint"/>
                                 <color key="currentPageIndicatorTintColor" name="theme"/>
                                 <connections>
@@ -1002,21 +1002,20 @@
                             <constraint firstItem="2ej-wk-Qvq" firstAttribute="leading" secondItem="YeN-WV-fIc" secondAttribute="leading" id="Sp6-db-XPm"/>
                             <constraint firstItem="LDb-PZ-N3K" firstAttribute="top" secondItem="2ej-wk-Qvq" secondAttribute="bottom" id="WTW-d9-8cr"/>
                             <constraint firstAttribute="trailing" secondItem="2ej-wk-Qvq" secondAttribute="trailing" id="WiB-0t-ajT"/>
+                            <constraint firstItem="0Nz-k8-cp3" firstAttribute="top" secondItem="LDb-PZ-N3K" secondAttribute="bottom" constant="20" id="Xp9-eM-1Gn"/>
                             <constraint firstItem="qIs-RA-yvT" firstAttribute="top" secondItem="8Wk-87-Ngs" secondAttribute="top" id="Y6K-V4-OsQ"/>
                             <constraint firstItem="0Nz-k8-cp3" firstAttribute="centerX" secondItem="8Wk-87-Ngs" secondAttribute="centerX" id="eum-oM-YqP"/>
                             <constraint firstItem="2ej-wk-Qvq" firstAttribute="top" secondItem="qIs-RA-yvT" secondAttribute="bottom" id="oyj-Sg-aYs"/>
-                            <constraint firstItem="8Wk-87-Ngs" firstAttribute="bottom" secondItem="0Nz-k8-cp3" secondAttribute="bottom" constant="30" id="qhw-Uk-fLx"/>
                             <constraint firstAttribute="trailing" secondItem="LDb-PZ-N3K" secondAttribute="trailing" id="taC-8M-V7k"/>
                             <constraint firstAttribute="trailing" secondItem="qIs-RA-yvT" secondAttribute="trailing" id="x4o-FZ-kIp"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="candidateCollectionLayout" destination="TuB-8c-Jea" id="jIU-Gm-i69"/>
                         <outlet property="candidateCollectionView" destination="LDb-PZ-N3K" id="8KB-Ur-3tv"/>
                         <outlet property="candidateCollectionViewHeightConstraint" destination="QTq-YP-lKy" id="Thn-L8-DbJ"/>
                         <outlet property="noPinnedHintLabel" destination="6Nf-kR-8cU" id="qw3-hx-gcC"/>
                         <outlet property="pageControl" destination="0Nz-k8-cp3" id="hkM-9W-tNV"/>
-                        <outlet property="pageControlBottomConstraint" destination="qhw-Uk-fLx" id="RLc-dP-fzE"/>
+                        <outlet property="pageControlTopConstraint" destination="Xp9-eM-1Gn" id="bUi-Tw-Gpy"/>
                         <outlet property="pinnedCollectionLayout" destination="AbY-x2-upI" id="I0h-xe-XA8"/>
                         <outlet property="pinnedCollectionView" destination="kTb-Tu-KFj" id="eMu-1W-fHt"/>
                         <outlet property="pinnedCollectionViewLeadingConstraint" destination="RoT-v5-GG6" id="4Ga-za-gwa"/>
@@ -1745,7 +1744,7 @@ chat history from icloud</string>
             <color red="0.89803921568627454" green="0.9137254901960784" blue="0.94117647058823528" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="text">
-            <color red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.20000000298023224" green="0.20000000298023224" blue="0.20000000298023224" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="text_accessory">
             <color red="0.72156862745098038" green="0.74117647058823533" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
