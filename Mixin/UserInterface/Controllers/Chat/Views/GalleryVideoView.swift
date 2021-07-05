@@ -1,5 +1,6 @@
 import UIKit
 import AVFoundation
+import MixinServices
 
 final class GalleryVideoView: UIView, GalleryAnimatable {
     
@@ -21,6 +22,8 @@ final class GalleryVideoView: UIView, GalleryAnimatable {
             layoutIfNeeded()
         }
     }
+    
+    private var playerStatusObserver: NSKeyValueObservation?
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -74,6 +77,15 @@ final class GalleryVideoView: UIView, GalleryAnimatable {
         playerView.backgroundColor = .clear
         playerView.layer.videoGravity = .resizeAspect
         playerView.layer.player = player
+        playerStatusObserver = player.observe(\.status) { player, _ in
+            if player.status == .failed {
+                if let error = player.error {
+                    Logger.write(error: error)
+                } else {
+                    Logger.write(log: "[GalleryVideoView] Player reports failed but no error is provided")
+                }
+            }
+        }
         
         contentView.addSubview(coverImageView)
         contentView.addSubview(playerView)
