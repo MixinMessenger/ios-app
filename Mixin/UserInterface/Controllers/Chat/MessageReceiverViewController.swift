@@ -435,8 +435,9 @@ extension MessageReceiverViewController {
             newMessage.mediaHeight = message.mediaHeight
             newMessage.mediaUrl = message.mediaUrl
             newMessage.thumbUrl = message.thumbUrl
-            let liveData = TransferLiveData(width: width, height: height, thumbUrl: thumbUrl, url: mediaUrl)
-            newMessage.content = try! JSONEncoder.default.encode(liveData).base64EncodedString()
+            let live = TransferLiveData(width: width, height: height, thumbUrl: thumbUrl, url: mediaUrl, shareable: true)
+            let liveData = try! JSONEncoder.default.encode(live)
+            newMessage.content = String(data: liveData, encoding: .utf8)
         } else if message.category.hasSuffix("_TRANSCRIPT") {
             let transcriptId = UUID().uuidString.lowercased()
             let children: [TranscriptMessage] = TranscriptMessageDAO.shared.childMessages(with: message.messageId).map { original in

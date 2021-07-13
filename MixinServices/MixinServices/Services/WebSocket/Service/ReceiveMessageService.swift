@@ -499,7 +499,7 @@ public class ReceiveMessageService: MixinService {
                 return
             }
             
-            let message = Message.createMessage(liveData: live, data: data)
+            let message = Message.createMessage(liveData: live, content: plainText.base64Decoded(), data: data)
             MessageDAO.shared.insertMessage(message: message, messageSource: data.source)
         } else if data.category.hasSuffix("_DATA")  {
             guard let base64Data = Data(base64Encoded: plainText) else {
@@ -698,7 +698,7 @@ public class ReceiveMessageService: MixinService {
                 ReceiveMessageService.shared.processUnknownMessage(data: data)
                 return
             }
-            MessageDAO.shared.updateLiveMessage(liveData: liveData, status:  Message.getStatus(data: data), messageId: messageId, category: data.category, conversationId: data.conversationId, messageSource: data.source)
+            MessageDAO.shared.updateLiveMessage(liveData: liveData, content: plainText.base64Decoded(), status: Message.getStatus(data: data), messageId: messageId, category: data.category, conversationId: data.conversationId, messageSource: data.source)
         case MessageCategory.SIGNAL_STICKER.rawValue:
             guard let transferStickerData = parseSticker(data: data, stickerText: plainText) else {
                 return

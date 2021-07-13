@@ -273,6 +273,7 @@
 "chat_forward_apps" = "BOTS";
 "chat_forward_invalid_app_card_not_shareable" = "The card has been set to not allow sharing";
 "chat_forward_invalid_link_not_shareable" = "The link has been set to not allow sharing";
+"chat_forward_invalid_live_not_shareable" = "The live has been set to not allow sharing";
 "chat_decryption_failed_hint" = "Waiting for %@ to get online and establish an encrypted session. ";
 "chat_sentence_learn_more" = "Learn more.";
 "chat_send_photo_failed" = "Failed to send photo";
