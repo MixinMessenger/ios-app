@@ -285,6 +285,10 @@ final class GalleryViewController: UIViewController, GalleryAnimatable {
         guard let message = MessageDAO.shared.getFullMessage(messageId: id) else {
             return
         }
+        if message.category.hasSuffix("_LIVE"), let live = message.live, !(live.isShareable ?? true) {
+            alert(R.string.localizable.chat_forward_invalid_live_not_shareable())
+            return
+        }
         let vc = MessageReceiverViewController.instance(content: .messages([message]))
         dismiss(transitionViewInitialOffsetY: 0) {
             UIApplication.homeNavigationController?.pushViewController(vc, animated: true)
