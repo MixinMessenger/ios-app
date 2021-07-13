@@ -302,7 +302,7 @@ extension MixinWebViewController: WebMoreMenuControllerDelegate {
                     if context.isShareable ?? true {
                         shareAppCardAction(currentUrl: url)
                     } else {
-                        presentGotItAlertController(title: R.string.localizable.chat_transcript_forward_invalid_link_not_shareable())
+                        presentGotItAlertController(title: R.string.localizable.chat_forward_invalid_link_not_shareable())
                     }
                 case .webPage:
                     shareUrlAction(currentUrl: url)

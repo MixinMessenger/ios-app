@@ -2658,7 +2658,7 @@ extension ConversationViewController {
                     if viewModel.message.appCard?.isShareable ?? true {
                         return .available
                     } else {
-                        let reason = R.string.localizable.chat_transcript_forward_invalid_app_card_not_shareable()
+                        let reason = R.string.localizable.chat_forward_invalid_app_card_not_shareable()
                         return .visibleButUnavailable(reason: reason)
                     }
                 } else {
