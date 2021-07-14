@@ -148,13 +148,14 @@ extension Job {
 
 extension Job {
     
-    init(message: Message, representativeId: String? = nil, data: String? = nil) {
+    init(message: Message, representativeId: String? = nil, data: String? = nil, silentNotification: Bool = false) {
         let param = BlazeMessageParam(conversationId: message.conversationId,
                                       category: message.category,
                                       data: data,
                                       status: MessageStatus.SENT.rawValue,
                                       messageId: message.messageId,
-                                      representativeId: representativeId)
+                                      representativeId: representativeId,
+                                      silentNotification: silentNotification)
         let action = BlazeMessageAction.createMessage.rawValue
         let blazeMessage = BlazeMessage(params: param, action: action)
         self.init(jobId: blazeMessage.id, action: .SEND_MESSAGE, blazeMessage: blazeMessage)

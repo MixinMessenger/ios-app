@@ -51,13 +51,13 @@ public class SendMessageService: MixinService {
         SendMessageService.shared.processMessages()
     }
     
-    public func sendMessage(message: Message, data: String?, immediatelySend: Bool = true) {
+    public func sendMessage(message: Message, data: String?, immediatelySend: Bool = true, silentNotification: Bool = false) {
         let needsEncodeCategories: [MessageCategory] = [
             .PLAIN_TEXT, .PLAIN_POST, .PLAIN_LOCATION, .PLAIN_TRANSCRIPT
         ]
         let shouldEncodeContent = needsEncodeCategories.map(\.rawValue).contains(message.category)
         let content = shouldEncodeContent ? data?.base64Encoded() : data
-        let job = Job(message: message, data: content)
+        let job = Job(message: message, data: content, silentNotification: silentNotification)
         UserDatabase.current.save(job)
         if immediatelySend {
             SendMessageService.shared.processMessages()

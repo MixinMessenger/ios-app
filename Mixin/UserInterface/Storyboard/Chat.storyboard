@@ -514,7 +514,7 @@
                                         </constraints>
                                     </stackView>
                                     <button opaque="NO" alpha="0.0" contentMode="scaleToFill" horizontalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ccj-kA-7d2">
-                                        <rect key="frame" x="319" y="3" width="45" height="44"/>
+                                        <rect key="frame" x="318" y="-2.5" width="46" height="49.5"/>
                                         <inset key="contentEdgeInsets" minX="10" minY="10" maxX="10" maxY="10"/>
                                         <state key="normal" image="Conversation/ic_send"/>
                                         <connections>
@@ -2093,7 +2093,7 @@
         <image name="Conversation/ic_mic" width="14" height="20"/>
         <image name="Conversation/ic_photo" width="20" height="20"/>
         <image name="Conversation/ic_recorder_lock_direction_left" width="6" height="10"/>
-        <image name="Conversation/ic_send" width="24" height="24"/>
+        <image name="Conversation/ic_send" width="30" height="29.5"/>
         <image name="Conversation/ic_sticker" width="22" height="22"/>
         <image name="bg_extension" width="60" height="60"/>
         <image name="ic_camera_close" width="20" height="20"/>
@@ -2121,7 +2121,7 @@
             <color red="0.89803921568627454" green="0.90588235294117647" blue="0.92156862745098034" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="text">
-            <color red="0.20000000298023224" green="0.20000000298023224" blue="0.20000000298023224" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+            <color red="0.20000000000000001" green="0.20000000000000001" blue="0.20000000000000001" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>
         <namedColor name="text_accessory">
             <color red="0.72200000286102295" green="0.74099999666213989" blue="0.77999997138977051" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>

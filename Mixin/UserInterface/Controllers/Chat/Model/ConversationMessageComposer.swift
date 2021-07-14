@@ -32,7 +32,7 @@ final class ConversationMessageComposer {
                   ownerUser: ownerUser)
     }
     
-    func sendMessage(type: MessageCategory, messageId: String? = nil, quote: MessageItem? = nil, value: Any) {
+    func sendMessage(type: MessageCategory, messageId: String? = nil, quote: MessageItem? = nil, value: Any, silentNotification: Bool = false) {
         let isGroupMessage = self.isGroup
         let ownerUser = self.ownerUser
         let createdAt: Date = {
@@ -56,7 +56,7 @@ final class ConversationMessageComposer {
         if type == .SIGNAL_TEXT || type == .SIGNAL_POST, let text = value as? String {
             message.content = text
             queue.async {
-                SendMessageService.shared.sendMessage(message: message, ownerUser: ownerUser, isGroupMessage: isGroupMessage)
+                SendMessageService.shared.sendMessage(message: message, ownerUser: ownerUser, isGroupMessage: isGroupMessage, silentNotification: silentNotification)
             }
         } else if type == .SIGNAL_DATA, let url = value as? URL {
             queue.async {
