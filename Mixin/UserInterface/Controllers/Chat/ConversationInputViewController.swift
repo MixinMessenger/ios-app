@@ -70,7 +70,7 @@ class ConversationInputViewController: UIViewController {
         return customInputViewController is ConversationInputInteractiveResizableViewController
     }
     
-    private let alwaysAddInteractionToSendButton = true
+    private let alwaysAddInteractionToSendButton = false
     private let interactiveDismissResponder = InteractiveDismissResponder(height: 50)
     private let maxInputRow: Int = {
         if ScreenHeight.current <= .short {
