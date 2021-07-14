@@ -6,8 +6,9 @@ import MixinServices
 class RequestInAppNotificationJob: BaseJob {
     
     let message: MessageItem
+    let isSilent: Bool
     
-    init?(message: MessageItem) {
+    init?(message: MessageItem, silent: Bool) {
         guard message.status == MessageStatus.DELIVERED.rawValue else {
             return nil
         }
@@ -21,6 +22,7 @@ class RequestInAppNotificationJob: BaseJob {
             return nil
         }
         self.message = message
+        self.isSilent = silent
     }
     
     override func getJobId() -> String {
@@ -55,7 +57,7 @@ class RequestInAppNotificationJob: BaseJob {
             }
             
             AppDelegate.current.updateApplicationIconBadgeNumber()
-            let content = UNMutableNotificationContent(message: message, ownerUser: ownerUser, conversation: conversation)
+            let content = UNMutableNotificationContent(message: message, ownerUser: ownerUser, conversation: conversation, silent: isSilent)
             let request = UNNotificationRequest(identifier: message.messageId, content: content, trigger: nil)
             UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
         }

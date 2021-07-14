@@ -99,14 +99,14 @@ public final class ParticipantDAO: UserDatabaseDAO {
         return Array(Set(ids))
     }
     
-    public func updateParticipantRole(message: Message, conversationId: String, participantId: String, role: String, source: String) -> Bool {
+    public func updateParticipantRole(message: Message, conversationId: String, participantId: String, role: String, source: String, silentNotification: Bool) -> Bool {
         db.write { (db) in
             let condition: SQLSpecificExpressible = Participant.column(of: .conversationId) == conversationId
                 && Participant.column(of: .userId) == participantId
             let assignment = Participant.column(of: .role).set(to: role)
             try Participant.filter(condition).updateAll(db, [assignment])
             if !role.isEmpty {
-                try MessageDAO.shared.insertMessage(database: db, message: message, messageSource: source)
+                try MessageDAO.shared.insertMessage(database: db, message: message, messageSource: source, silentNotification: silentNotification)
             }
             db.afterNextTransactionCommit { _ in
                 NotificationCenter.default.post(onMainThread: Self.participantDidChangeNotification,
@@ -116,7 +116,7 @@ public final class ParticipantDAO: UserDatabaseDAO {
         }
     }
     
-    public func addParticipant(message : Message, conversationId: String, participantId: String, updatedAt: String, status: ParticipantStatus, source: String) -> Bool {
+    public func addParticipant(message : Message, conversationId: String, participantId: String, updatedAt: String, status: ParticipantStatus, source: String, silentNotification: Bool) -> Bool {
         let participant = Participant(conversationId: conversationId,
                                       userId: participantId,
                                       role: "",
@@ -124,7 +124,7 @@ public final class ParticipantDAO: UserDatabaseDAO {
                                       createdAt: updatedAt)
         return db.write { (db) in
             try participant.save(db)
-            try MessageDAO.shared.insertMessage(database: db, message: message, messageSource: source)
+            try MessageDAO.shared.insertMessage(database: db, message: message, messageSource: source, silentNotification: silentNotification)
             db.afterNextTransactionCommit { _ in
                 NotificationCenter.default.post(onMainThread: Self.participantDidChangeNotification,
                                                 object: self,
@@ -133,7 +133,7 @@ public final class ParticipantDAO: UserDatabaseDAO {
         }
     }
     
-    public func removeParticipant(message: Message, conversationId: String, userId: String, source: String) -> Bool {
+    public func removeParticipant(message: Message, conversationId: String, userId: String, source: String, silentNotification: Bool) -> Bool {
         db.write { (db) in
             try Participant
                 .filter(Participant.column(of: .conversationId) == conversationId && Participant.column(of: .userId) == userId)
@@ -144,7 +144,7 @@ public final class ParticipantDAO: UserDatabaseDAO {
             try ParticipantSession
                 .filter(ParticipantSession.column(of: .conversationId) == conversationId)
                 .updateAll(db, ParticipantSession.column(of: .sentToServer).set(to: nil))
-            try MessageDAO.shared.insertMessage(database: db, message: message, messageSource: source)
+            try MessageDAO.shared.insertMessage(database: db, message: message, messageSource: source, silentNotification: silentNotification)
             NotificationCenter.default.post(name: ReceiveMessageService.senderKeyDidChangeNotification,
                                             object: self,
                                             userInfo: [ReceiveMessageService.UserInfoKey.conversationId: conversationId])
