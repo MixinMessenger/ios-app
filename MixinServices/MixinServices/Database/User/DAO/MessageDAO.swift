@@ -799,8 +799,9 @@ extension MessageDAO {
                                messageSource: messageSource)
     }
     
-    public func updateLiveMessage(liveData: TransferLiveData, status: String, messageId: String, category: String, conversationId: String, messageSource: String) {
+    public func updateLiveMessage(liveData: TransferLiveData, content: String?, status: String, messageId: String, category: String, conversationId: String, messageSource: String) {
         let assignments = [
+            Message.column(of: .content).set(to: content),
             Message.column(of: .mediaWidth).set(to: liveData.width),
             Message.column(of: .mediaHeight).set(to: liveData.height),
             Message.column(of: .mediaUrl).set(to: liveData.url),

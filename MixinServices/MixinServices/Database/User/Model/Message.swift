@@ -146,8 +146,18 @@ extension Message {
                              createdAt: data.createdAt)
     }
     
-    public static func createMessage(liveData: TransferLiveData, data: BlazeMessageData) -> Message {
-        return createMessage(messageId: data.messageId, conversationId: data.conversationId, userId: data.getSenderId(), category: data.category, mediaUrl: liveData.url, mediaWidth: liveData.width, mediaHeight: liveData.height, thumbUrl: liveData.thumbUrl, status: getStatus(data: data), createdAt: data.createdAt)
+    public static func createMessage(liveData: TransferLiveData, content: String?, data: BlazeMessageData) -> Message {
+        createMessage(messageId: data.messageId,
+                      conversationId: data.conversationId,
+                      userId: data.getSenderId(),
+                      category: data.category,
+                      content: content,
+                      mediaUrl: liveData.url,
+                      mediaWidth: liveData.width,
+                      mediaHeight: liveData.height,
+                      thumbUrl: liveData.thumbUrl,
+                      status: getStatus(data: data),
+                      createdAt: data.createdAt)
     }
     
     public static func createLocationMessage(content: String, data: BlazeMessageData) -> Message {

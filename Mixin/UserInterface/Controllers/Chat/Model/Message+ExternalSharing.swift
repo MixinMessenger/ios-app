@@ -23,7 +23,8 @@ extension Message {
             message.mediaWidth = data.width
             message.mediaHeight = data.height
             message.thumbUrl = data.thumbUrl
-            message.content = try! JSONEncoder.default.encode(data).base64EncodedString()
+            let data = try! JSONEncoder.default.encode(data)
+            message.content = String(data: data, encoding: .utf8)
         case .contact(let data):
             message.category = MessageCategory.SIGNAL_CONTACT.rawValue
             message.sharedUserId = data.userId

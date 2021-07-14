@@ -271,6 +271,9 @@
 "chat_forward_chats" = "最近聊天";
 "chat_forward_contacts" = "联系人";
 "chat_forward_apps" = "机器人";
+"chat_forward_invalid_app_card_not_shareable" = "该卡片已被设置为不允许转发";
+"chat_forward_invalid_link_not_shareable" = "该链接已被设置为不允许分享";
+"chat_forward_invalid_live_not_shareable" = "该直播已被设置为不允许转发";
 "chat_decryption_failed_hint" = "等待%@上线后建立加密会话。";
 "chat_sentence_learn_more" = "了解更多。";
 "chat_send_photo_failed" = "发送图片失败，请稍后重试";
@@ -343,8 +346,6 @@
 "chat_external_sharing_category_app_card" = "卡片";
 "chat_transcript" = "聊天记录";
 "chat_transcript_forward_invalid_media_status" = "请下载全部附件后转发";
-"chat_transcript_forward_invalid_app_card_not_shareable" = "该卡片已被设置为不允许转发";
-"chat_transcript_forward_invalid_link_not_shareable" = "该链接已被设置为不允许分享";
 "chat_pick_from_library" = "打开相册";
 "chat_manage_photo_auth" = "更改设置";
 "chat_photo_select_more" = "选择更多照片";

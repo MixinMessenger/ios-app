@@ -100,6 +100,13 @@ public final class MessageItem {
         return try? JSONDecoder.default.decode(Location.self, from: json)
     }()
     
+    public lazy var live: TransferLiveData? = {
+        guard category.hasSuffix("_LIVE"), let data = content?.data(using: .utf8) else {
+            return nil
+        }
+        return try? JSONDecoder.default.decode(TransferLiveData.self, from: data)
+    }()
+    
     public init(messageId: String, conversationId: String, userId: String, category: String, content: String? = nil, mediaUrl: String? = nil, mediaMimeType: String? = nil, mediaSize: Int64? = nil, mediaDuration: Int64? = nil, mediaWidth: Int? = nil, mediaHeight: Int? = nil, mediaHash: String? = nil, mediaKey: Data? = nil, mediaDigest: Data? = nil, mediaStatus: String? = nil, mediaWaveform: Data? = nil, mediaLocalIdentifier: String? = nil, thumbImage: String? = nil, thumbUrl: String? = nil, status: String, participantId: String? = nil, snapshotId: String? = nil, name: String? = nil, stickerId: String? = nil, createdAt: String, actionName: String? = nil, userFullName: String? = nil, userIdentityNumber: String? = nil, userAvatarUrl: String? = nil, appId: String? = nil, snapshotAmount: String? = nil, snapshotAssetId: String? = nil, snapshotType: String? = nil, participantFullName: String? = nil, participantUserId: String? = nil, assetUrl: String? = nil, assetType: String? = nil, assetSymbol: String? = nil, assetIcon: String? = nil, assetWidth: Int? = nil, assetHeight: Int? = nil, assetCategory: String? = nil, sharedUserId: String? = nil, sharedUserFullName: String? = nil, sharedUserIdentityNumber: String? = nil, sharedUserAvatarUrl: String? = nil, sharedUserAppId: String? = nil, sharedUserIsVerified: Bool? = nil, quoteMessageId: String? = nil, quoteContent: Data? = nil, mentionsJson: Data? = nil, hasMentionRead: Bool? = nil) {
         self.messageId = messageId
         self.conversationId = conversationId

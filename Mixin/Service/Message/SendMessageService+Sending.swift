@@ -82,7 +82,7 @@ extension SendMessageService {
                     msg.content = String(content.prefix(maxTextMessageContentLength))
                 }
                 MessageDAO.shared.insertMessage(message: msg, children: children, messageSource: "") {
-                    if ["_TEXT", "_POST", "_STICKER", "_CONTACT", "_LIVE", "_LOCATION"].contains(where: msg.category.hasSuffix) || msg.category == MessageCategory.APP_CARD.rawValue {
+                    if ["_TEXT", "_POST", "_STICKER", "_CONTACT", "_LOCATION"].contains(where: msg.category.hasSuffix) || msg.category == MessageCategory.APP_CARD.rawValue {
                         SendMessageService.shared.sendMessage(message: msg, data: msg.content)
                     } else if msg.category.hasSuffix("_IMAGE") {
                         let jobId = SendMessageService.shared.saveUploadJob(message: msg)
@@ -101,6 +101,9 @@ extension SendMessageService {
                         let job = TranscriptAttachmentUploadJob(message: msg,
                                                                 jobIdToRemoveAfterFinished: jobId)
                         UploaderQueue.shared.addJob(job: job)
+                    } else if msg.category.hasSuffix("_LIVE") {
+                        let data = msg.content?.base64Encoded()
+                        SendMessageService.shared.sendMessage(message: msg, data: data)
                     }
                 }
             }
