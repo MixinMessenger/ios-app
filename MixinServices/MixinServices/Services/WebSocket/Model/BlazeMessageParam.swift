@@ -58,7 +58,7 @@ struct BlazeMessageParam: Codable {
         case recipientIds = "recipient_ids"
         case candidate
         
-        case silentNotification = "is_silent"
+        case silentNotification = "silent"
     }
     
 }

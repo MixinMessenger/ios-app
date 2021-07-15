@@ -29,7 +29,7 @@ public struct BlazeMessageData: Codable {
         case quoteMessageId = "quote_message_id"
         case representativeId = "representative_id"
         case sessionId = "session_id"
-        case silentNotification = "is_silent"
+        case silentNotification = "silent"
     }
     
 }
