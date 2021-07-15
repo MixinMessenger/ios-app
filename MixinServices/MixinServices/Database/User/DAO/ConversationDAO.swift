@@ -29,10 +29,9 @@ public final class ConversationDAO: UserDatabaseDAO {
     LEFT JOIN message_mentions mm ON m.id = mm.message_id
     INNER JOIN users u1 ON u1.user_id = c.owner_id
     WHERE c.category IS NOT NULL %@
-    ORDER BY c.pin_time DESC, c.last_message_created_at DESC
+    ORDER BY %@c.pin_time DESC, c.last_message_created_at DESC
     """
-    private static let sqlQueryConversationByCoversationId = String(format: sqlQueryConversation, " AND c.conversation_id = ? ")
-    private static let sqlQueryGroupOrStrangerConversationByName = String(format: sqlQueryConversation, " AND ((c.category = 'GROUP' AND c.name LIKE ? ESCAPE '/') OR (c.category = 'CONTACT' AND u1.relationship = 'STRANGER' AND u1.full_name LIKE ? ESCAPE '/'))")
+    private static let sqlQueryConversationByCoversationId = String(format: sqlQueryConversation, " AND c.conversation_id = ? ", "")
     
     public func hasUnreadMessage(outsideCircleWith id: String) -> Bool {
         let sql = """
@@ -244,12 +243,14 @@ public final class ConversationDAO: UserDatabaseDAO {
     }
     
     public func getGroupOrStrangerConversation(withNameLike keyword: String, limit: Int?) -> [ConversationItem] {
-        var sql = ConversationDAO.sqlQueryGroupOrStrangerConversationByName
+        let condition = "AND ((c.category = 'GROUP' AND c.name LIKE :wildcarded ESCAPE '/') OR (c.category = 'CONTACT' AND u1.relationship = 'STRANGER' AND u1.full_name LIKE :wildcarded ESCAPE '/'))"
+        let order = "CASE WHEN ((c.category = 'GROUP' AND LOWER(c.name) = :lowercased) OR (c.category = 'CONTACT' AND LOWER(u1.full_name) = :lowercased)) THEN 1 ELSE 0 END DESC, "
+        var sql = String(format: Self.sqlQueryConversation, condition, order)
         if let limit = limit {
             sql += " LIMIT \(limit)"
         }
-        let keyword = "%\(keyword.sqlEscaped)%"
-        return db.select(with: sql, arguments: [keyword, keyword])
+        let arguments = ["wildcarded": "%\(keyword.sqlEscaped)%", "lowercased": keyword.lowercased()]
+        return db.select(with: sql, arguments: StatementArguments(arguments))
     }
     
     public func getConversationStatus(conversationId: String) -> Int? {
@@ -267,7 +268,7 @@ public final class ConversationDAO: UserDatabaseDAO {
     public func conversationList(limit: Int? = nil, circleId: String? = nil) -> [ConversationItem] {
         var sql: String
         if circleId == nil {
-            sql = String(format: Self.sqlQueryConversation, "")
+            sql = String(format: Self.sqlQueryConversation, "", "")
         } else {
             sql = """
                 SELECT c.conversation_id as conversationId, c.owner_id as ownerId, c.icon_url as iconUrl,

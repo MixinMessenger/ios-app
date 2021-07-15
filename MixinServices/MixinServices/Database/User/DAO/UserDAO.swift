@@ -51,17 +51,17 @@ public final class UserDAO: UserDatabaseDAO {
     }
     
     public func getUsers(keyword: String, limit: Int?) -> [UserItem] {
-        let keyword = "%\(keyword.sqlEscaped)%"
         var sql = """
         \(Self.sqlQueryColumns)
         WHERE u.relationship = 'FRIEND'
             AND u.identity_number > '0'
-            AND ((u.full_name LIKE ? ESCAPE '/') OR (u.identity_number LIKE ? ESCAPE '/') OR (u.phone LIKE ? ESCAPE '/'))
+            AND ((u.full_name LIKE :escaped ESCAPE '/') OR (u.identity_number LIKE :escaped ESCAPE '/') OR (u.phone LIKE :escaped ESCAPE '/'))
+        ORDER BY CASE WHEN LOWER(u.full_name) = :lowercased THEN 1 ELSE 0 END DESC
         """
         if let limit = limit {
             sql += " LIMIT \(limit)"
         }
-        return db.select(with: sql, arguments: [keyword, keyword, keyword])
+        return db.select(with: sql, arguments: ["escaped": "%\(keyword.sqlEscaped)%", "lowercased": keyword.lowercased()])
     }
     
     public func getFriendUser(withAppId id: String) -> User? {
