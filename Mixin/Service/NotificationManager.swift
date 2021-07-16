@@ -199,7 +199,8 @@ extension NotificationManager {
         guard source != BlazeMessageAction.listPendingMessages.rawValue || abs(message.createdAt.toUTCDate().timeIntervalSinceNow) < 60 else {
             return
         }
-        guard let job = RequestInAppNotificationJob(message: message) else {
+        let silent = notification.userInfo?[MessageDAO.UserInfoKey.silentNotification] as? Bool ?? false
+        guard let job = RequestInAppNotificationJob(message: message, silent: silent) else {
             return
         }
         ConcurrentJobQueue.shared.addJob(job: job)

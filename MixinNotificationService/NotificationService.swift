@@ -77,7 +77,7 @@ final class NotificationService: UNNotificationServiceExtension {
         } else {
             ownerUser = nil
         }
-        let content = UNMutableNotificationContent(message: message, ownerUser: ownerUser, conversation: conversation)
+        let content = UNMutableNotificationContent(message: message, ownerUser: ownerUser, conversation: conversation, silent: rawContent?.sound == nil)
         deliverContent(content: content)
     }
     

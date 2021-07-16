@@ -278,6 +278,7 @@
 "chat_send_video_failed" = "发送视频失败，请稍后重试";
 "chat_send_audio_failed" = "发送语音失败，请稍后重试";
 "chat_send_location_failed" = "发送位置失败，请稍后重试";
+"chat_send_silent_notification" = "静音发送";
 "chat_user_location_undetermined" = "目前无法确定位置，请稍候重试";
 "chat_open_external_maps_apple" = "在地图中打开";
 "chat_open_external_maps_google" = "在 Google Maps 中打开";

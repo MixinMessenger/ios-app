@@ -14,6 +14,7 @@ public struct BlazeMessageData: Codable {
     public let quoteMessageId: String
     public let representativeId: String
     public let sessionId: String
+    public let silentNotification: Bool
     
     enum CodingKeys: String, CodingKey {
         case conversationId = "conversation_id"
@@ -28,6 +29,7 @@ public struct BlazeMessageData: Codable {
         case quoteMessageId = "quote_message_id"
         case representativeId = "representative_id"
         case sessionId = "session_id"
+        case silentNotification = "silent"
     }
     
 }

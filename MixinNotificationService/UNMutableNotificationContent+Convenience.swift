@@ -4,7 +4,7 @@ import MixinServices
 
 public extension UNMutableNotificationContent {
     
-    convenience init(message: MessageItem, ownerUser: UserItem?, conversation: ConversationItem) {
+    convenience init(message: MessageItem, ownerUser: UserItem?, conversation: ConversationItem, silent: Bool) {
         self.init()
         
         let conversationIsGroup = conversation.isGroup()
@@ -33,7 +33,7 @@ public extension UNMutableNotificationContent {
             userInfo[key] = value
         })
         
-        sound = .mixin
+        sound = silent ? nil : .mixin
         categoryIdentifier = NotificationCategoryIdentifier.message
         threadIdentifier = conversation.conversationId
     }

@@ -9,6 +9,7 @@ public final class MessageDAO: UserDatabaseDAO {
         public static let messageId = "mid"
         public static let messsageSource = "msg_source"
         public static let mediaStatus = "ms"
+        public static let silentNotification = "sn"
     }
     
     public static let shared = MessageDAO()
@@ -518,6 +519,7 @@ public final class MessageDAO: UserDatabaseDAO {
         message: Message,
         children: [TranscriptMessage]? = nil,
         messageSource: String,
+        silentNotification: Bool = false,
         completion: (() -> Void)? = nil
     ) {
         var message = message
@@ -537,13 +539,21 @@ public final class MessageDAO: UserDatabaseDAO {
             try children?.save(db)
             try insertMessage(database: db,
                               message: message,
-                              messageSource: messageSource,
                               children: children,
+                              messageSource: messageSource,
+                              silentNotification: silentNotification,
                               completion: completion)
         }
     }
     
-    public func insertMessage(database: GRDB.Database, message: Message, messageSource: String, children: [TranscriptMessage]? = nil, completion: (() -> Void)? = nil) throws {
+    public func insertMessage(
+        database: GRDB.Database,
+        message: Message,
+        children: [TranscriptMessage]? = nil,
+        messageSource: String,
+        silentNotification: Bool,
+        completion: (() -> Void)? = nil
+    ) throws {
         if message.category.hasPrefix("SIGNAL_") {
             try message.insert(database)
         } else {
@@ -573,7 +583,8 @@ public final class MessageDAO: UserDatabaseDAO {
                     let userInfo: [String: Any] = [
                         MessageDAO.UserInfoKey.conversationId: newMessage.conversationId,
                         MessageDAO.UserInfoKey.message: newMessage,
-                        MessageDAO.UserInfoKey.messsageSource: messageSource
+                        MessageDAO.UserInfoKey.messsageSource: messageSource,
+                        MessageDAO.UserInfoKey.silentNotification: silentNotification,
                     ]
                     NotificationCenter.default.post(onMainThread: MessageDAO.didInsertMessageNotification, object: self, userInfo: userInfo)
                 }
@@ -728,7 +739,16 @@ extension MessageDAO {
         return db.recordExists(in: Message.self, where: condition)
     }
     
-    private func updateRedecryptMessage(assignments: [ColumnAssignment], mention: MessageMention? = nil, messageId: String, category: String, conversationId: String, messageSource: String, children: [TranscriptMessage]? = nil) {
+    private func updateRedecryptMessage(
+        assignments: [ColumnAssignment],
+        mention: MessageMention? = nil,
+        messageId: String,
+        category: String,
+        conversationId: String,
+        messageSource: String,
+        children: [TranscriptMessage]? = nil,
+        silentNotification: Bool
+    ) {
         var newMessage: MessageItem?
         
         db.write { (db) in
@@ -756,14 +776,15 @@ extension MessageDAO {
         let userInfo: [String: Any] = [
             MessageDAO.UserInfoKey.conversationId: message.conversationId,
             MessageDAO.UserInfoKey.message: message,
-            MessageDAO.UserInfoKey.messsageSource: messageSource
+            MessageDAO.UserInfoKey.messsageSource: messageSource,
+            MessageDAO.UserInfoKey.silentNotification: silentNotification
         ]
         Queue.main.autoSync {
             NotificationCenter.default.post(name: MessageDAO.didRedecryptMessageNotification, object: self, userInfo: userInfo)
         }
     }
     
-    public func updateMessageContentAndStatus(content: String, status: String, mention: MessageMention?, messageId: String, category: String, conversationId: String, messageSource: String) {
+    public func updateMessageContentAndStatus(content: String, status: String, mention: MessageMention?, messageId: String, category: String, conversationId: String, messageSource: String, silentNotification: Bool) {
         let assignments = [
             Message.column(of: .content).set(to: content),
             Message.column(of: .status).set(to: status)
@@ -773,10 +794,11 @@ extension MessageDAO {
                                messageId: messageId,
                                category: category,
                                conversationId: conversationId,
-                               messageSource: messageSource)
+                               messageSource: messageSource,
+                               silentNotification: silentNotification)
     }
     
-    public func updateMediaMessage(mediaData: TransferAttachmentData, status: String, messageId: String, category: String, conversationId: String, mediaStatus: MediaStatus, messageSource: String) {
+    public func updateMediaMessage(mediaData: TransferAttachmentData, status: String, messageId: String, category: String, conversationId: String, mediaStatus: MediaStatus, messageSource: String, silentNotification: Bool) {
         let assignments = [
             Message.column(of: .content).set(to: mediaData.attachmentId),
             Message.column(of: .mediaMimeType).set(to: mediaData.mimeType),
@@ -796,10 +818,11 @@ extension MessageDAO {
                                messageId: messageId,
                                category: category,
                                conversationId: conversationId,
-                               messageSource: messageSource)
+                               messageSource: messageSource,
+                               silentNotification: silentNotification)
     }
     
-    public func updateLiveMessage(liveData: TransferLiveData, status: String, messageId: String, category: String, conversationId: String, messageSource: String) {
+    public func updateLiveMessage(liveData: TransferLiveData, status: String, messageId: String, category: String, conversationId: String, messageSource: String, silentNotification: Bool) {
         let assignments = [
             Message.column(of: .mediaWidth).set(to: liveData.width),
             Message.column(of: .mediaHeight).set(to: liveData.height),
@@ -811,10 +834,11 @@ extension MessageDAO {
                                messageId: messageId,
                                category: category,
                                conversationId: conversationId,
-                               messageSource: messageSource)
+                               messageSource: messageSource,
+                               silentNotification: silentNotification)
     }
     
-    public func updateStickerMessage(stickerData: TransferStickerData, status: String, messageId: String, category: String, conversationId: String, messageSource: String) {
+    public func updateStickerMessage(stickerData: TransferStickerData, status: String, messageId: String, category: String, conversationId: String, messageSource: String, silentNotification: Bool) {
         let assignments = [
             Message.column(of: .stickerId).set(to: stickerData.stickerId),
             Message.column(of: .status).set(to: status)
@@ -823,10 +847,11 @@ extension MessageDAO {
                                messageId: messageId,
                                category: category,
                                conversationId: conversationId,
-                               messageSource: messageSource)
+                               messageSource: messageSource,
+                               silentNotification: silentNotification)
     }
     
-    public func updateContactMessage(transferData: TransferContactData, status: String, messageId: String, category: String, conversationId: String, messageSource: String) {
+    public func updateContactMessage(transferData: TransferContactData, status: String, messageId: String, category: String, conversationId: String, messageSource: String, silentNotification: Bool) {
         let assignments = [
             Message.column(of: .sharedUserId).set(to: transferData.userId),
             Message.column(of: .status).set(to: status)
@@ -835,10 +860,11 @@ extension MessageDAO {
                                messageId: messageId,
                                category: category,
                                conversationId: conversationId,
-                               messageSource: messageSource)
+                               messageSource: messageSource,
+                               silentNotification: silentNotification)
     }
     
-    public func updateTranscriptMessage(children: [TranscriptMessage], status: String, mediaStatus: MediaStatus, content: String, messageId: String, category: String, conversationId: String, messageSource: String) {
+    public func updateTranscriptMessage(children: [TranscriptMessage], status: String, mediaStatus: MediaStatus, content: String, messageId: String, category: String, conversationId: String, messageSource: String, silentNotification: Bool) {
         let assignments = [
             Message.column(of: .status).set(to: status),
             Message.column(of: .content).set(to: content),
@@ -849,7 +875,8 @@ extension MessageDAO {
                                category: category,
                                conversationId: conversationId,
                                messageSource: messageSource,
-                               children: children)
+                               children: children,
+                               silentNotification: silentNotification)
     }
     
 }

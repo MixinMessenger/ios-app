@@ -28,6 +28,8 @@ struct BlazeMessageParam: Codable {
     var recipientIds: [String]? = nil
     var candidate: String? = nil
     
+    var silentNotification: Bool = false
+    
     var krakenDebugDescription: String {
         "<KrakenParam category: \(category ?? "(null)"), trackId: \(trackId ?? "(null)"), jsep: \(jsep ?? "(null)"), recipientIds: \(recipientIds.debugDescription ?? "(null)"), candidate: \(candidate ?? "(null)")>"
     }
@@ -55,6 +57,8 @@ struct BlazeMessageParam: Codable {
         case jsep
         case recipientIds = "recipient_ids"
         case candidate
+        
+        case silentNotification = "silent"
     }
     
 }

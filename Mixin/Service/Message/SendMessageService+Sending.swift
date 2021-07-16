@@ -3,7 +3,7 @@ import MixinServices
 
 extension SendMessageService {
     
-    func sendMessage(message: Message, children: [TranscriptMessage]? = nil, ownerUser: UserItem?, isGroupMessage: Bool) {
+    func sendMessage(message: Message, children: [TranscriptMessage]? = nil, ownerUser: UserItem?, isGroupMessage: Bool, silentNotification: Bool = false) {
         guard let account = LoginManager.shared.account else {
             return
         }
@@ -83,7 +83,7 @@ extension SendMessageService {
                 }
                 MessageDAO.shared.insertMessage(message: msg, children: children, messageSource: "") {
                     if ["_TEXT", "_POST", "_STICKER", "_CONTACT", "_LIVE", "_LOCATION"].contains(where: msg.category.hasSuffix) || msg.category == MessageCategory.APP_CARD.rawValue {
-                        SendMessageService.shared.sendMessage(message: msg, data: msg.content)
+                        SendMessageService.shared.sendMessage(message: msg, data: msg.content, silentNotification: silentNotification)
                     } else if msg.category.hasSuffix("_IMAGE") {
                         let jobId = SendMessageService.shared.saveUploadJob(message: msg)
                         UploaderQueue.shared.addJob(job: ImageUploadJob(message: msg, jobId: jobId))
