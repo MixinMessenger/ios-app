@@ -10,6 +10,12 @@ class PostMessageCell: TextMessageCell {
     let expandImageView = UIImageView(image: R.image.conversation.ic_message_expand())
     let trailingInfoBackgroundView = TrailingInfoBackgroundView()
     
+    private var reloadWebViewContentOnAppEnterForeground = false
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     override func prepare() {
         messageContentView.addSubview(webView)
         messageContentView.addSubview(trailingInfoBackgroundView)
@@ -23,6 +29,7 @@ class PostMessageCell: TextMessageCell {
         webView.backgroundColor = .clear
         webView.isUserInteractionEnabled = false
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        webView.navigationDelegate = self
         #if DEBUG_POST_LAYOUT
         messageContentView.addSubview(textView)
         textView.isUserInteractionEnabled = false
@@ -37,6 +44,8 @@ class PostMessageCell: TextMessageCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         webView.evaluateJavaScript("document.body.remove()")
+        reloadWebViewContentOnAppEnterForeground = false
+        NotificationCenter.default.removeObserver(self)
     }
     
     override func render(viewModel: MessageViewModel) {
@@ -58,7 +67,29 @@ class PostMessageCell: TextMessageCell {
             textView.frame = viewModel.webViewFrame
             textView.attributedText = viewModel.contentAttributedString
             #endif
+            NotificationCenter.default.addObserver(self,
+                                                   selector: #selector(reloadWebViewContentIfNeeded(_:)),
+                                                   name: UIApplication.willEnterForegroundNotification,
+                                                   object: nil)
         }
+    }
+    
+    @objc private func reloadWebViewContentIfNeeded(_ notification: Notification) {
+        guard reloadWebViewContentOnAppEnterForeground else {
+            return
+        }
+        if let viewModel = viewModel as? PostMessageViewModel {
+            webView.loadHTMLString(viewModel.html, baseURL: Bundle.main.bundleURL)
+            reloadWebViewContentOnAppEnterForeground = false
+        }
+    }
+    
+}
+
+extension PostMessageCell: WKNavigationDelegate {
+    
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        reloadWebViewContentOnAppEnterForeground = true
     }
     
 }
