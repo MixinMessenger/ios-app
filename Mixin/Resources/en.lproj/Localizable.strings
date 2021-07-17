@@ -52,6 +52,7 @@
 "action_remove_all" = "Remove All";
 "action_close" = "Close";
 "action_change_settings" = "Change Settings";
+"action_open" = "Open";
 "menu_delete" = "Delete";
 "menu_edit" = "Edit";
 "menu_report" = "Report";

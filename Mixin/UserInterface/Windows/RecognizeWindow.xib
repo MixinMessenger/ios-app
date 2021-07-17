@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15702" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="18122" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait" appearance="dark"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15704"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -16,7 +16,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TQ9-9O-96j" customClass="CornerView" customModule="Mixin" customModuleProvider="target">
-                    <rect key="frame" x="0.0" y="412" width="375" height="268"/>
+                    <rect key="frame" x="0.0" y="419" width="375" height="261"/>
                     <subviews>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xqB-K4-ipL">
                             <rect key="frame" x="309" y="0.0" width="66" height="66"/>
@@ -30,15 +30,15 @@
                             </connections>
                         </button>
                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" bounces="NO" scrollEnabled="NO" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" bouncesZoom="NO" editable="NO" text="https://www.google.com" textAlignment="center" adjustsFontForContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V5F-62-qhE">
-                            <rect key="frame" x="30" y="96" width="315" height="37"/>
+                            <rect key="frame" x="30" y="96" width="315" height="34"/>
                             <color key="backgroundColor" name="background"/>
                             <color key="textColor" name="text"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                             <dataDetectorType key="dataDetectorTypes" link="YES"/>
                         </textView>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uOW-zj-ZNt" customClass="RoundedButton" customModule="Mixin" customModuleProvider="target">
-                            <rect key="frame" x="143.5" y="193" width="88" height="42"/>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uOW-zj-ZNt" customClass="RoundedButton" customModule="Mixin" customModuleProvider="target">
+                            <rect key="frame" x="146.5" y="190" width="82" height="39"/>
                             <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
                             <inset key="contentEdgeInsets" minX="26" minY="12" maxX="26" maxY="12"/>
                             <state key="normal" title="Copy"/>
@@ -47,7 +47,20 @@
                                 <userDefinedRuntimeAttribute type="boolean" keyPath="adjustsFontForContentSizeCategory" value="YES"/>
                             </userDefinedRuntimeAttributes>
                             <connections>
-                                <action selector="copyAction:" destination="UYR-5Z-1kS" eventType="touchUpInside" id="b1E-Hb-5qU"/>
+                                <action selector="buttonAction:" destination="UYR-5Z-1kS" eventType="touchUpInside" id="q4j-WJ-90f"/>
+                            </connections>
+                        </button>
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y9A-UR-Gd5">
+                            <rect key="frame" x="146.5" y="189" width="82" height="39"/>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleSubhead"/>
+                            <inset key="contentEdgeInsets" minX="26" minY="12" maxX="26" maxY="12"/>
+                            <state key="normal" title="Copy"/>
+                            <userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttribute type="boolean" keyPath="adjustsFontForContentSizeCategory" value="YES"/>
+                                <userDefinedRuntimeAttribute type="string" keyPath="local_title" value="action_copy"/>
+                            </userDefinedRuntimeAttributes>
+                            <connections>
+                                <action selector="copyAction:" destination="UYR-5Z-1kS" eventType="touchUpInside" id="ac9-rX-Nk1"/>
                             </connections>
                         </button>
                     </subviews>
@@ -55,7 +68,9 @@
                     <constraints>
                         <constraint firstItem="uOW-zj-ZNt" firstAttribute="top" secondItem="V5F-62-qhE" secondAttribute="bottom" constant="60" id="AnS-vn-jhf"/>
                         <constraint firstItem="xqB-K4-ipL" firstAttribute="top" secondItem="TQ9-9O-96j" secondAttribute="top" id="Kcg-ha-yt7"/>
+                        <constraint firstItem="y9A-UR-Gd5" firstAttribute="centerX" secondItem="TQ9-9O-96j" secondAttribute="centerX" id="PLl-kX-Ek9"/>
                         <constraint firstAttribute="trailing" secondItem="xqB-K4-ipL" secondAttribute="trailing" id="Xn1-AO-ZSp"/>
+                        <constraint firstItem="uOW-zj-ZNt" firstAttribute="bottom" secondItem="y9A-UR-Gd5" secondAttribute="top" priority="12" constant="40" id="Y2f-c1-nf8"/>
                         <constraint firstItem="V5F-62-qhE" firstAttribute="leading" secondItem="TQ9-9O-96j" secondAttribute="leading" constant="30" id="nwf-sF-lkO"/>
                         <constraint firstItem="uOW-zj-ZNt" firstAttribute="centerX" secondItem="TQ9-9O-96j" secondAttribute="centerX" id="tiM-Vz-Uyq"/>
                         <constraint firstItem="V5F-62-qhE" firstAttribute="top" secondItem="xqB-K4-ipL" secondAttribute="bottom" constant="30" id="uDY-0v-vc8"/>
@@ -68,16 +83,19 @@
                     </userDefinedRuntimeAttributes>
                 </view>
             </subviews>
+            <viewLayoutGuide key="safeArea" id="lRr-3C-PSy"/>
             <color key="backgroundColor" white="0.0" alpha="0.5" colorSpace="calibratedWhite"/>
             <constraints>
                 <constraint firstAttribute="trailing" secondItem="TQ9-9O-96j" secondAttribute="trailing" id="0GY-qh-rHq"/>
                 <constraint firstItem="TQ9-9O-96j" firstAttribute="leading" secondItem="UYR-5Z-1kS" secondAttribute="leading" id="AUv-Pb-zGK"/>
+                <constraint firstItem="lRr-3C-PSy" firstAttribute="bottom" secondItem="y9A-UR-Gd5" secondAttribute="bottom" constant="20" id="F0N-ut-4kM"/>
                 <constraint firstAttribute="bottom" secondItem="TQ9-9O-96j" secondAttribute="bottom" priority="500" constant="-13" id="ZWl-62-ZeD"/>
-                <constraint firstItem="uOW-zj-ZNt" firstAttribute="bottom" secondItem="lRr-3C-PSy" secondAttribute="bottom" constant="-20" id="g9u-Ls-ZDH"/>
             </constraints>
-            <viewLayoutGuide key="safeArea" id="lRr-3C-PSy"/>
             <connections>
+                <outlet property="actionButton" destination="uOW-zj-ZNt" id="oMA-FW-YUO"/>
+                <outlet property="actionButtonBottomConstraint" destination="Y2f-c1-nf8" id="1gu-uQ-zkq"/>
                 <outlet property="contentTextView" destination="V5F-62-qhE" id="oDN-oE-zx0"/>
+                <outlet property="copyButton" destination="y9A-UR-Gd5" id="mE6-CY-ozU"/>
                 <outlet property="popupView" destination="TQ9-9O-96j" id="sX7-ac-uZj"/>
             </connections>
             <point key="canvasLocation" x="82.5" y="63.5"/>
